@@ -1,20 +1,6 @@
 
-filename = "1-dec/resources/depth-input-2"
-lines = File.readlines(filename).map(&:to_i)
-increaseCount = 0
-i = 0
-
-while i + 3 < lines.length
-
-    currentWindow = [lines[i], lines[i+1], lines[i+2]]
-    nextWindow = [lines[i+1], lines[i+2], lines[i+3]]
-
-    if nextWindow.sum > currentWindow.sum
-        increaseCount += 1
-    end
-    i += 1
-    
+def getIncreaseDepthcount(window, file)
+    File.readlines(file).map(&:to_i).each_cons(window).map(&:sum).each_cons(2).map {|a,b| b>a ? 1:0}.sum
 end
 
-
-puts increaseCount
+puts getIncreaseDepthcount(3, "1-dec/resources/depth-input-2")

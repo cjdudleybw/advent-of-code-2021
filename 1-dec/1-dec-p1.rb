@@ -1,4 +1,3 @@
-
 filename = "1-dec/resources/depth-input"
 increaseCount = 0
 previous = -1
