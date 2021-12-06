@@ -1,45 +1,59 @@
 # frozen_string_literal: true
 
-# Stores the bingo board state
-class BingoBoard
-  def initialize(start_array)
-    @board = start_array.map { |a| a.map}
+def h_lines(start_p, end_p)
+  points = []
+  x_range = [start_p[0], end_p[0]].sort
+  x_range[0].upto(x_range[1]).each do |x|
+    points.append([x, start_p[1]].join(','))
   end
+  points
 end
 
-# Stores the collection and bingo boards, and applies the input to them
-class BingoGame
-  def initialize(board_file, input_file)
-    @bingo_boards = initialize_boards(board_file)
-    @inputs = read_input(input_file)
+def v_lines(start_p, end_p)
+  points = []
+  y_range = [start_p[1], end_p[1]].sort
+  y_range[0].upto(y_range[1]).each do |y|
+    points.append([start_p[0], y].join(','))
   end
-
-  def read_input(input_file); end
-
-  def initialize_boards(board_file)
-    board_array = []
-    in_array = File.readlines(board_file).map(&:split)
-    board_count = (in_array.length + 1) / 6
-    0.upto(board_count - 1).each do |i|
-      board_array.append(BingoBoard.new(in_array[i * 6, 5]))
-    end
-    board_array
-  end
-
-  def play_bingo
-    bingo = false
-    i = 0
-    j = 0
-    while !bingo && i < inputs.length
-      while !bingo && j < bingo_boards.length
-        bingo = bingo_boards[j].add_number(inputs[i])
-        j += 1
-      end
-      i += 1
-      j = 0
-    end
-    puts i == inputs.length ? 0 : inputs[i - 1] * bingo_boards[j - 1].get_unmarked_sum
-  end
+  points
 end
 
-foo = BingoGame.new('4-dec/resources/test 2/boards', '4-dec/resources/test 2/number-input')
+def d_lines(start_p, end_p)
+  # puts "#{start_p} -> #{end_p}"
+  x_range = start_p[0] > end_p[0] ? (end_p[0]..start_p[0]).to_a.reverse : (start_p[0]..end_p[0]).to_a
+  y_range = start_p[1] > end_p[1] ? (end_p[1]..start_p[1]).to_a.reverse : (start_p[1]..end_p[1]).to_a
+  # puts "x_range = #{x_range}"
+  # puts "y_range = #{y_range}"
+  x_range.zip(y_range).map { |p| p.join(',') }
+end
+
+def expand_line(line)
+  points = []
+  start_p = line[0].split(',').map(&:to_i)
+  end_p = line[1].split(',').map(&:to_i)
+
+  if start_p[0] == end_p[0]
+    v_lines(start_p, end_p).each { |p| points.append(p) }
+  elsif start_p[1] == end_p[1]
+    h_lines(start_p, end_p).each { |p| points.append(p) }
+  else
+    d_lines(start_p, end_p).each { |p| points.append(p) }
+  end
+  points
+end
+
+def map_vents(file)
+  ocean_floor_map = Hash.new(0)
+  ocean_floor_map.default = 0
+  vent_lines = File.readlines(file).map { |line| line.strip.split(' -> ') }.map { |line| expand_line(line) }
+  # puts vent_lines.to_a.map(&:inspect)
+  vent_lines.each do |vl|
+    vl.each do |point|
+      ocean_floor_map[point] += 1
+    end
+  end
+  # puts ocean_floor_map
+  ocean_floor_map.count { |point| point[1] >= 2 }
+end
+
+puts map_vents('5-dec/resources/puzzle/input')

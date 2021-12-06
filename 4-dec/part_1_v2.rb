@@ -103,4 +103,4 @@ inputs = File.foreach('4-dec/resources/puzzle/number-input').first.split(',')
 # puts inputs
 
 puts play_game(game_boards, game_map, inputs)
-puts play_game_last_win(game_boards, game_map, inputs)
+# puts play_game_last_win(game_boards, game_map, inputs)
