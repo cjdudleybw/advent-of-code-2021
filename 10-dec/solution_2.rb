@@ -4,13 +4,10 @@ def find_incomplete(line)
   brackets = { '(' => ')', '[' => ']', '{' => '}', '<' => '>' }
   stack = []
   line.each_char do |c|
-    if brackets.keys.include?(c)
-      stack.append(c)
-    elsif brackets.values.include?(c)
-      c == brackets[stack.last] ? stack.pop : (return [])
-    end
+    stack.append(c) if brackets.keys.include?(c)
+    (c == brackets[stack.last] ? stack.pop : (return [])) if brackets.values.include?(c)
   end
-  stack.reverse.map { |c| brackets[c] }
+  stack.map { |c| brackets[c] }.reverse
 end
 
 def autocomplete_score(file)
