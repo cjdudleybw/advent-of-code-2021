@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# frozen_string_literal: true
 
 def flash(grid, i, j)
   grid[i][j]['flash'] = true
@@ -22,12 +23,21 @@ def do_step(grid)
       increment(grid, i, j)
     end
   end
-  grid.flatten.select { |cell| cell['flash'] }.length
 end
 
-def solution(file, steps)
+def all_flash(grid)
+  grid_length = grid.flatten.length
+  grid.flatten.select { |cell| cell['flash'] }.length == grid_length
+end
+
+def solution(file)
   grid = File.readlines(file).map(&:strip).map(&:chars).map { |r| r.map { |c| { 'num' => c.to_i, 'flash' => false } } }
-  1.upto(steps).map { |_s| do_step(grid) }.sum
+  steps = 0
+  until all_flash(grid)
+    do_step(grid)
+    steps += 1
+  end
+  steps
 end
 
-puts solution('11-dec/resources/test/input', 100)
+puts solution('11-dec/resources/puzzle/input')
