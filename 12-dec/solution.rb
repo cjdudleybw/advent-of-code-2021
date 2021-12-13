@@ -1,36 +1,59 @@
 # frozen_string_literal: true
 
-segment_map = {
-    1z
-}
+class Cave
+  def initialize(name)
+    @name = name
+    @size = name =~ /[A-Z]/ ? 'big' : 'small'
+    @terminal = %w[start end].include?(name)
+    @adjacent = []
+  end
 
-def len_to_num(len)
-  case len
-  when 2
-    1
-  when 4
-    4
-  when 3
-    7
-  when 7
-    8
+  attr_reader :adjacent, :name, :size, :terminal
+
+  def add_adjacent(cave)
+    @adjacent.append(cave)
   end
 end
 
-def solve_line(line)
-  counts = {}
-  (line[0] + line[1]).each do |out|
-    counts[len_to_num(out.length)] = out if [2, 3, 4, 7].include? out.length
+def can_visit_cave(route, cave)
+  if cave.size == 'big' || cave.name == 'end'
+    true
+  elsif cave.name == 'start'
+    false
+  else
+    caves = Hash.new(0)
+    lower = route.reject do |seen_cave|
+      seen_cave.size == 'big' || seen_cave.terminal
+    end
+    lower.each { |seen_cave| caves[seen_cave.name] += 1 }
+    caves.values.include?(2) ? caves[cave.name] == 0 : true
   end
-  counts
 end
 
-def get_instances(file)
-  line_solves = []
-  File.readlines(file).map { |l| l.split('|') }.map { |a, b,| [a.split, b.split] }.each do |line|
-    line_solves.append(solve_line(line))
+def traverse(all_routes, past_route, cave)
+  curr_route = past_route.clone
+  curr_route.append(cave)
+  if cave.name == 'end'
+    all_routes.append(curr_route)
+  else
+    cave.adjacent.each do |next_cave|
+      traverse(all_routes, curr_route, next_cave) if can_visit_cave(curr_route, next_cave)
+    end
   end
-  line_solves
 end
 
-puts get_instances('8-dec/resources/test/input-small').to_a.map(&:inspect)
+def get_paths(file)
+  caves = Hash.new(0)
+  File.readlines(file).map(&:strip).map { |line| line.split('-') }.each do |pair|
+    pair.each { |cave| caves[cave] = Cave.new(cave) if caves[cave] == 0 }
+    caves[pair[0]].add_adjacent(caves[pair[1]])
+    caves[pair[1]].add_adjacent(caves[pair[0]])
+  end
+
+  all_routes = []
+  curr_route = []
+  traverse(all_routes, curr_route, caves['start'])
+  all_routes
+end
+
+puts get_paths('12-dec/resources/puzzle/input').length
