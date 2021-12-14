@@ -1,36 +1,51 @@
 # frozen_string_literal: true
 
-segment_map = {
-    1z
-}
+require 'pp'
 
-def len_to_num(len)
-  case len
-  when 2
-    1
-  when 4
-    4
-  when 3
-    7
-  when 7
-    8
+def do_fold(dots, fold)
+  dots.keys.each do |dot|
+    case fold[0]
+    when 'x'
+      if dot[0] > fold[1].to_i
+        dots.delete(dot)
+        dot[0] = dot[0] - 2 * (dot[0] - fold[1].to_i)
+        dots[dot] = true
+      end
+    when 'y'
+      if dot[1] > fold[1].to_i
+        dots.delete(dot)
+        dot[1] = dot[1] - 2 * (dot[1] - fold[1].to_i)
+        dots[dot] = true
+      end
+    end
   end
 end
 
-def solve_line(line)
-  counts = {}
-  (line[0] + line[1]).each do |out|
-    counts[len_to_num(out.length)] = out if [2, 3, 4, 7].include? out.length
+def pretty_print_dots(dots)
+  h = dots.keys.map { |k| k[0] }.max
+  w = dots.keys.map { |k| k[1] }.max
+  grid = Array.new(h + 1) { Array.new(w + 1, '.') }
+  dots.each_key do |dot|
+    grid[dot[0]][dot[1]] = '#'
   end
-  counts
+  pp grid
 end
 
-def get_instances(file)
-  line_solves = []
-  File.readlines(file).map { |l| l.split('|') }.map { |a, b,| [a.split, b.split] }.each do |line|
-    line_solves.append(solve_line(line))
+def solution(file)
+  all_lines = File.readlines(file).map(&:strip).reject(&:empty?)
+  dots = {}
+  all_lines.reject do |line|
+    line.include?('fold')
+  end.map { |line| line.split(',') }.map { |coord| coord.map(&:to_i) }.each do |dot|
+    dots[dot] =
+      true
   end
-  line_solves
+  folds = all_lines.select do |line|
+            line.include?('fold')
+          end.map { |fold| fold.match(/[xy]=[0-9]*/)[0] }.map { |line| line.split('=') }
+
+  folds.each { |fold| do_fold(dots, fold) }
+  dots
 end
 
-puts get_instances('8-dec/resources/test/input-small').to_a.map(&:inspect)
+pretty_print_dots(solution('13-dec/resources/puzzle/input'))
