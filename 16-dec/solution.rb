@@ -29,23 +29,19 @@ def parse_literal(stack)
   literal.flatten.join.to_i(2)
 end
 
-def parse_op_with_length(stack)
-  parse_packet(stack.shift(stack.shift(15).join.to_i(2)))
-end
-
-def parse_op_with_count(stack)
-  1.upto(stack.shift(11).join.to_i(2)).map { parse_packet(stack, true) }.flatten
-end
-
 def parse_operator(stack)
-  (stack.shift.to_i.zero? ? parse_op_with_length(stack) : parse_op_with_count(stack)).flatten.map(&:to_i)
+  if stack.shift.to_i.zero?
+    parse_packet(stack.shift(stack.shift(15).join.to_i(2))).flatten.map(&:to_i)
+  else
+    1.upto(stack.shift(11).join.to_i(2)).map { parse_packet(stack, true) }.flatten.flatten.map(&:to_i)
+  end
 end
 
 def parse_packet(stack, counting = false)
-  result = []
   version = stack.shift(3).join.to_i(2)
   type_id = stack.shift(3).join.to_i(2)
 
+  result = []
   case type_id
   when 0
     # sum

@@ -67,7 +67,7 @@ end
 def solution(file)
   grid = expand_grid(File.readlines(file).map(&:strip).map(&:chars).map { |line| line.map(&:to_i) })
   # grid = File.readlines(file).map(&:strip).map(&:chars).map { |line| line.map(&:to_i) }
-  fastest2(grid)
+  safest_path(grid)
 end
 
-solution('15-dec/resources/test/input')
+solution('15-dec/resources/puzzle/input')
